@@ -2,7 +2,7 @@ import React from 'react'
 
 const GameBoardComponent = () => {
 
-  
+
 
   return (
     <div>

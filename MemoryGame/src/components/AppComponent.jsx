@@ -3,35 +3,41 @@ import CardComponent from './CardComponent';
 import ButtonOpen from './ButtonOpen';
 
 const AppComponent = () => {
-  const BASE_URL = 'https://picsum.photos/';
-  const NUM_IMAGES = 6;
+  const DECK_API_URL = 'https://deckofcardsapi.com/api/deck';
+  const NUM_CARDS = 6; // Number of unique cards to fetch
   const [images, setImages] = useState([]);
   const [flippedStates, setFlippedStates] = useState({});
-  const [showAll, setShowAll] = useState(false);
+
+  const fetchCards = async () => {
+    try {
+      // Fetch a new shuffled deck
+      const response = await fetch(`${DECK_API_URL}/new/shuffle/?deck_count=1`);
+      const data = await response.json();
+      const deckId = data.deck_id;
+
+      // Draw cards from the deck
+      const drawResponse = await fetch(`${DECK_API_URL}/${deckId}/draw/?count=${NUM_CARDS}`);
+      const drawData = await drawResponse.json();
+      const fetchedCards = drawData.cards.map(cards => cards.image);
+
+      // Duplicate and shuffle the cards
+      const duplicatedCards = [...fetchedCards, ...fetchedCards];
+      const shuffledCards = duplicatedCards.sort(() => Math.random() - 0.5);
+      setImages(shuffledCards);
+
+      // Initialize flipped states
+      const initialFlippedStates = shuffledCards.reduce((acc, _, index) => {
+        acc[index] = false;
+        return acc;
+      }, {});
+      setFlippedStates(initialFlippedStates);
+    } catch (error) {
+      console.error('Fetch error:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const fetchedImages = [];
-        for (let i = 0; i < NUM_IMAGES; i++) {
-          const imageUrl = `${BASE_URL}${200 + i * 50}/${300}`;
-          fetchedImages.push(imageUrl);
-        }
-        const duplicatedImages = [...fetchedImages, ...fetchedImages];
-        const shuffledImages = duplicatedImages.sort(() => Math.random() - 0.5);
-        setImages(shuffledImages);
-        
-        const initialFlippedStates = shuffledImages.reduce((acc, _, index) => {
-          acc[index] = false;
-          return acc;
-        }, {});
-        setFlippedStates(initialFlippedStates);
-      } catch (error) {
-        console.error('Fetch error:', error);
-      }
-    };
-
-    fetchImages();
+    fetchCards();
   }, []);
 
   const handleCardClick = (index) => {
@@ -64,7 +70,7 @@ const AppComponent = () => {
   return (
     <div>
       <ButtonOpen handleClick={handleButtonClick} title="Open All Cards" />
-      <div className='grid grid-cols-3 gap-2 p-4 place-items-stretch'>
+      <div className='grid grid-cols-4 gap-2 p-2 place-items-stretch  '>
         {images.map((image, index) => (
           <CardComponent
             key={index}
