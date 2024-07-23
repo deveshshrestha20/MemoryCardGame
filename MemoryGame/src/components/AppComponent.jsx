@@ -2,35 +2,36 @@ import React, { useEffect, useState } from 'react';
 import CardComponent from './CardComponent';
 import ButtonOpen from './ButtonOpen';
 
+
 const AppComponent = () => {
   const DECK_API_URL = 'https://deckofcardsapi.com/api/deck';
   const NUM_CARDS = 6; // Number of unique cards to fetch
   const [images, setImages] = useState([]);
   const [flippedStates, setFlippedStates] = useState({});
+  const [matchedCards, setMatchedCards] = useState([]);
+  const [selectedCards, setSelectedCards] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchCards = async () => {
     try {
-      // Fetch a new shuffled deck
       const response = await fetch(`${DECK_API_URL}/new/shuffle/?deck_count=1`);
       const data = await response.json();
       const deckId = data.deck_id;
 
-      // Draw cards from the deck
       const drawResponse = await fetch(`${DECK_API_URL}/${deckId}/draw/?count=${NUM_CARDS}`);
       const drawData = await drawResponse.json();
-      const fetchedCards = drawData.cards.map(cards => cards.image);
+      const fetchedCards = drawData.cards.map(card => card.image);
 
-      // Duplicate and shuffle the cards
       const duplicatedCards = [...fetchedCards, ...fetchedCards];
       const shuffledCards = duplicatedCards.sort(() => Math.random() - 0.5);
       setImages(shuffledCards);
 
-      // Initialize flipped states
       const initialFlippedStates = shuffledCards.reduce((acc, _, index) => {
         acc[index] = false;
         return acc;
       }, {});
       setFlippedStates(initialFlippedStates);
+      setIsLoading(false);
     } catch (error) {
       console.error('Fetch error:', error);
     }
@@ -41,26 +42,47 @@ const AppComponent = () => {
   }, []);
 
   const handleCardClick = (index) => {
-    setFlippedStates((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }));
+    if (flippedStates[index] || selectedCards.length === 2) return;
+
+    const newFlippedStates = { ...flippedStates, [index]: true };
+    setFlippedStates(newFlippedStates);
+
+    const newSelectedCards = [...selectedCards, index];
+    setSelectedCards(newSelectedCards);
+
+    if (newSelectedCards.length === 2) {
+      const [firstIndex, secondIndex] = newSelectedCards;
+      if (images[firstIndex] === images[secondIndex]) {
+        setMatchedCards(prev => [...prev, firstIndex, secondIndex]);
+      } else {
+        setTimeout(() => {
+          setFlippedStates(prev => ({
+            ...prev,
+            [firstIndex]: false,
+            [secondIndex]: false,
+          }));
+        }, 1000);
+      }
+      setSelectedCards([]);
+    }
   };
 
   const handleButtonClick = () => {
-    setFlippedStates((prev) => {
+    setFlippedStates(prev => {
       const newState = { ...prev };
-      Object.keys(newState).forEach((key) => {
+      Object.keys(newState).forEach(key => {
         newState[key] = true;
       });
       return newState;
     });
 
     setTimeout(() => {
-      setFlippedStates((prev) => {
+      setFlippedStates(prev => {
         const newState = { ...prev };
-        Object.keys(newState).forEach((key) => {
-          newState[key] = false;
+        Object.keys(newState).forEach(key => {
+          if (!matchedCards.includes(parseInt(key))) {
+            newState[key] = false;
+          }
         });
         return newState;
       });
@@ -70,15 +92,19 @@ const AppComponent = () => {
   return (
     <div>
       <ButtonOpen handleClick={handleButtonClick} title="Open All Cards" />
-      <div className='grid grid-cols-4 gap-2 p-2 place-items-stretch  '>
-        {images.map((image, index) => (
-          <CardComponent
-            key={index}
-            image={image}
-            isFlipped={flippedStates[index]}
-            onCardClick={() => handleCardClick(index)}
-          />
-        ))}
+      <div className='grid grid-cols-4 gap-2 p-2 place-items-stretch'>
+        {isLoading ? (
+          <h1>Loading ....</h1>
+        ) : (
+          images.map((image, index) => (
+            <CardComponent
+              key={index}
+              image={image}
+              isFlipped={flippedStates[index] || matchedCards.includes(index)}
+              onCardClick={() => handleCardClick(index)}
+            />
+          ))
+        )}
       </div>
     </div>
   );

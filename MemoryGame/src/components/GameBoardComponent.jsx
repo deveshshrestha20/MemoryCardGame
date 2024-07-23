@@ -1,10 +1,12 @@
 import React from 'react'
 
-const GameBoardComponent = () => {
 
+const GameBoardComponent = ({ }) => {
 
+  
 
   return (
+    
     <div>
       
     </div>
