@@ -1,58 +1,77 @@
-import React, { useEffect, useState } from "react";
-import CardComponent from "./CardComponent";
-import ButtonOpen from "./ButtonOpen";
+import React, { useEffect, useState } from 'react';
+import CardComponent from './CardComponent';
+import ButtonOpen from './ButtonOpen';
 
 const AppComponent = () => {
-  const BASE_URL = "https://picsum.photos/"; // Picsum Photos base URL
-  const NUM_IMAGES = 6; // Number of unique images to fetch
+  const BASE_URL = 'https://picsum.photos/';
+  const NUM_IMAGES = 6;
   const [images, setImages] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [flippedStates, setFlippedStates] = useState({});
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchImages = async () => {
       try {
         const fetchedImages = [];
-
         for (let i = 0; i < NUM_IMAGES; i++) {
-          const imageUrl = `${BASE_URL}${200 + i * 50}/${300}`; // Example dimensions, change as needed
+          const imageUrl = `${BASE_URL}${200 + i * 50}/${300}`;
           fetchedImages.push(imageUrl);
         }
-
-        // Duplicate the images to have pairs
         const duplicatedImages = [...fetchedImages, ...fetchedImages];
-
-        // Shuffle the array
         const shuffledImages = duplicatedImages.sort(() => Math.random() - 0.5);
-
         setImages(shuffledImages);
+        
+        const initialFlippedStates = shuffledImages.reduce((acc, _, index) => {
+          acc[index] = false;
+          return acc;
+        }, {});
+        setFlippedStates(initialFlippedStates);
       } catch (error) {
-        console.error("Fetch error:", error);
-        setError(error.message);
-      } finally {
-        setIsLoading(false);
+        console.error('Fetch error:', error);
       }
     };
 
     fetchImages();
   }, []);
 
- 
+  const handleCardClick = (index) => {
+    setFlippedStates((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  const handleButtonClick = () => {
+    setFlippedStates((prev) => {
+      const newState = { ...prev };
+      Object.keys(newState).forEach((key) => {
+        newState[key] = true;
+      });
+      return newState;
+    });
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+    setTimeout(() => {
+      setFlippedStates((prev) => {
+        const newState = { ...prev };
+        Object.keys(newState).forEach((key) => {
+          newState[key] = false;
+        });
+        return newState;
+      });
+    }, 3000);
+  };
 
   return (
     <div>
-      
-      <div className="grid grid-cols-3 gap-2 p-4 place-items-stretch">
+      <ButtonOpen handleClick={handleButtonClick} title="Open All Cards" />
+      <div className='grid grid-cols-3 gap-2 p-4 place-items-stretch'>
         {images.map((image, index) => (
-          <CardComponent key={index} image={image} />
+          <CardComponent
+            key={index}
+            image={image}
+            isFlipped={flippedStates[index]}
+            onCardClick={() => handleCardClick(index)}
+          />
         ))}
       </div>
     </div>

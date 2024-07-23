@@ -10,7 +10,7 @@ function App() {
   
 
   return (
-    <div className='min-h-screen flex justify-center items-center'>
+    <div className='bg-teal-800 min-h-screen flex justify-center items-center'>
       <AppComponent/>
       <ButtonOpen/>
       <GameBoardComponent/>

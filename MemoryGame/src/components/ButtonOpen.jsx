@@ -1,12 +1,13 @@
-import React from 'react'
+import React from 'react';
 
-const ButtonOpen = () => {
-
+const ButtonOpen = ({ handleClick, title }) => {
   return (
-    <div className=' bg-orange-600 p-2 rounded-lg border-blue-500 '>
-      <button className='text-xl text-green-900'>Open</button>
+    <div className='bg-orange-600 m-3 rounded-lg text-center h-8 '>
+      <button onClick={handleClick} className=' text-xl text-green-900'>
+        {title}
+      </button>
     </div>
-  )
-}
+  );
+};
 
-export default ButtonOpen
+export default ButtonOpen;
