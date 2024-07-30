@@ -6,6 +6,7 @@ import CountdownTimer from "./CountdownTimer";
 import Confetti from "react-confetti";
 import ModalComponent from "./ModalComponent";
 import Loader from "./Loader";
+import start from "../assets/start.wav"
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const AppComponent = () => {
@@ -20,27 +21,25 @@ const AppComponent = () => {
   const [guesses, setGuesses] = useState(0);
   const [countTimer, setCountTimer] = useState(40);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [showModal, setShowModal] = useState(false); // State to control the "Try Again" modal visibility
-  const [showModal2, setShowModal2] = useState(false); // State to control the "Congratulations" modal visibility
-  const [showModal3, setShowModal3] = useState(false); // State to control the "Guesses Complete" modal visibility
-  const [gameStarted, setGameStarted] = useState(false); // State to only flip the cards when the start button is clicked
+  const [showModal, setShowModal] = useState(false);
+  const [showModal2, setShowModal2] = useState(false);
+  const [showModal3, setShowModal3] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
   const timerId = useRef(null);
+  const [isTimerStarted, setIsTimerStarted] = useState(false);
+  
 
-  const formatTime = (time) => {
-    let minutes = Math.floor(time / 60);
-    let seconds = Math.floor(time % 60);
-
-    if (minutes < 10) minutes = "0" + minutes;
-    if (seconds < 10) seconds = "0" + seconds;
-    return minutes + ":" + seconds;
-  };
+  const startSound = () => {
+    new Audio(start).play()
+  }
 
   const startTimer = () => {
+    setIsTimerStarted(true);
     timerId.current = setInterval(() => {
       setCountTimer((prev) => {
         if (prev <= 1) {
           clearInterval(timerId.current);
-          setShowModal(true); // Show the "Try Again" modal when the timer reaches zero
+          setShowModal(true);
           return 0;
         }
         return prev - 1;
@@ -87,10 +86,10 @@ const AppComponent = () => {
   useEffect(() => {
     if (matchedCards.length === images.length && images.length > 0) {
       setShowConfetti(true);
-      setShowModal2(true); // Show the "Congratulations" modal when all cards are matched
+      setShowModal2(true);
       const timer = setTimeout(() => {
         setShowConfetti(false);
-      }, 10000); // Show confetti for 10 seconds
+      }, 20000);
       return () => clearTimeout(timer);
     }
   }, [matchedCards, images.length]);
@@ -100,7 +99,8 @@ const AppComponent = () => {
       !gameStarted ||
       flippedStates[index] ||
       selectedCards.length === 2 ||
-      guesses >= MAX_GUESSES
+      guesses >= MAX_GUESSES ||
+      !isTimerStarted
     )
       return;
 
@@ -113,9 +113,9 @@ const AppComponent = () => {
     if (newSelectedCards.length === 2) {
       setGuesses((prevGuesses) => {
         const updatedGuesses = prevGuesses + 1;
-        if (updatedGuesses > MAX_GUESSES) {
-          clearInterval(timerId.current); // Stop the timer
-          setShowModal3(true); // Show the "Try Again" modal when the guess limit is reached
+        if (updatedGuesses >= MAX_GUESSES) {
+          clearInterval(timerId.current);
+          setShowModal3(true);
         }
         return updatedGuesses;
       });
@@ -137,6 +137,7 @@ const AppComponent = () => {
   };
 
   const handleButtonClick = () => {
+    startSound()
     setGameStarted(true);
     setFlippedStates((prev) => {
       const newState = { ...prev };
@@ -145,7 +146,7 @@ const AppComponent = () => {
       });
       return newState;
     });
-
+    
     setTimeout(() => {
       setFlippedStates((prev) => {
         const newState = { ...prev };
@@ -156,9 +157,10 @@ const AppComponent = () => {
         });
         return newState;
       });
+      
     }, 3000);
-
-    startTimer(); // Start the timer when the button is clicked
+    
+    startTimer();
   };
 
   const handleRestart = () => {
@@ -170,15 +172,15 @@ const AppComponent = () => {
     setSelectedCards([]);
     setGameStarted(false);
     setGuesses(0);
+    setIsTimerStarted(false);
     setIsLoading(true);
     setShowConfetti(false);
     fetchCards();
-    stopTimer(); // Stop the timer on restart
+    stopTimer();
   };
 
   return (
     <div className="relative flex h-screen w-screen bg-bgImage bg-cover justify-center items-center">
-      {/* Loading Overlay */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <Loader />
@@ -194,7 +196,7 @@ const AppComponent = () => {
           show={showModal}
           handleClose={() => {
             setShowModal(false);
-            stopTimer()
+            stopTimer();
           }}
           handleRestart={handleRestart}
           title="Time's Up!🕔"
@@ -231,7 +233,7 @@ const AppComponent = () => {
       {!isLoading && (
         <div>
           <div className="absolute top-28 right-80">
-            <CountdownTimer time={formatTime(countTimer)} />
+            <CountdownTimer time={countTimer} startTimer={isTimerStarted} />
           </div>
 
           <div className="absolute top-48 right-80">

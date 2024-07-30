@@ -14,7 +14,7 @@ const ModalComponent = ({ title, body, show, handleClose, handleRestart, clearTi
       show={show}
       onHide={handleClose}
       className=''
-      backdropClassName=''
+      backdrop="static"
       size="" // Adjust size as needed
       aria-labelledby="modal-title"
       centered // Ensure the modal is centered vertically
@@ -28,9 +28,9 @@ const ModalComponent = ({ title, body, show, handleClose, handleRestart, clearTi
         <p>{body}</p>
       </Modal.Body>
       <Modal.Footer>
-        <Button className='' variant="secondary" onClick={handleClose}>
+        {/* <Button className='' variant="secondary" onClick={handleClose}>
           Close
-        </Button>
+        </Button> */}
         <Button variant="primary" onClick={handleRestart}>
           Restart
         </Button>
