@@ -23,6 +23,7 @@ const AppComponent = () => {
   const [showModal, setShowModal] = useState(false); // State to control the "Try Again" modal visibility
   const [showModal2, setShowModal2] = useState(false); // State to control the "Congratulations" modal visibility
   const [showModal3, setShowModal3] = useState(false); // State to control the "Guesses Complete" modal visibility
+  const [gameStarted, setGameStarted] = useState(false); // State to only flip the cards when the start button is clicked
   const timerId = useRef(null);
 
   const formatTime = (time) => {
@@ -96,6 +97,7 @@ const AppComponent = () => {
 
   const handleCardClick = (index) => {
     if (
+      !gameStarted ||
       flippedStates[index] ||
       selectedCards.length === 2 ||
       guesses >= MAX_GUESSES
@@ -135,6 +137,7 @@ const AppComponent = () => {
   };
 
   const handleButtonClick = () => {
+    setGameStarted(true);
     setFlippedStates((prev) => {
       const newState = { ...prev };
       Object.keys(newState).forEach((key) => {
@@ -165,6 +168,7 @@ const AppComponent = () => {
     setShowModal3(false);
     setMatchedCards([]);
     setSelectedCards([]);
+    setGameStarted(false);
     setGuesses(0);
     setIsLoading(true);
     setShowConfetti(false);
