@@ -1,23 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: "/Memory-Card-Game/",
+  base: "/Memory-Card-Game/", // Ensure this matches your repository name
   server: {
     port: 2500,
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        assetFileNames: "assets/[name]-[hash].[ext]",
-        chunkFileNames: "assets/[name]-[hash].js",
-        entryFileNames: "assets/[name]-[hash].js",
-      },
-    },
-  },
-  transformIndexHtml: {
-    transform: (html) =>
-      html.replace(/<head>/, `<head><base href="/Memory-Card-Game/">`),
   },
 });
