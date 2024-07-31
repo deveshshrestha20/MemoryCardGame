@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: "/MemoryGame/", // Add this line
+  base: "/Memory-Card-Game/", // Ensure this matches your repository name
   server: {
     port: 2500,
   },
