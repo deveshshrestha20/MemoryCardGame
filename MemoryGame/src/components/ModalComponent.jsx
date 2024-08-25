@@ -19,11 +19,11 @@ const ModalComponent = ({ title, body, show, handleClose, handleRestart, clearTi
       aria-labelledby="modal-title"
       centered // Ensure the modal is centered vertically
     >
-      <Modal.Header className='' closeButton>
-        <Modal.Title className='  text-md text-center text-sky-600' id="modal-title">
+      {/* <Modal.Header className='' closeButton> */}
+        <Modal.Title className='  text-md text-center p-2 text-sky-600' id="modal-title">
           {title}
         </Modal.Title>
-      </Modal.Header>
+      {/* </Modal.Header> */}
       <Modal.Body className='text-center'>
         <p>{body}</p>
       </Modal.Body>

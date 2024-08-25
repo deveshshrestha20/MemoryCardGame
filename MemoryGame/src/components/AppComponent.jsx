@@ -7,6 +7,9 @@ import Confetti from "react-confetti";
 import ModalComponent from "./ModalComponent";
 import Loader from "./Loader";
 import start from "../assets/start.wav"
+import card from "../assets/card.mp3"
+import lose from "../assets/lose.mp3"
+import win from "../assets/win.mp3"
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const AppComponent = () => {
@@ -19,7 +22,7 @@ const AppComponent = () => {
   const [selectedCards, setSelectedCards] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [guesses, setGuesses] = useState(0);
-  const [countTimer, setCountTimer] = useState(40);
+  const [countTimer, setCountTimer] = useState(35);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
@@ -28,10 +31,36 @@ const AppComponent = () => {
   const timerId = useRef(null);
   const [isTimerStarted, setIsTimerStarted] = useState(false);
   
+  
+  
 
   const startSound = () => {
     new Audio(start).play()
   }
+
+  const cardSound = () => {
+    new Audio(card).play()
+  }
+
+  const loseSound = () => {
+    new Audio(lose).play()
+  }
+  
+  const winSound = ()=> {
+    new Audio(win).play()
+  }
+
+  useEffect(() => {
+    if (showModal || showModal3) {
+      loseSound(); // Play the sound when the modal appears
+    }
+  }, [showModal,showModal3]);
+
+  useEffect(() => {
+    if(showModal2){
+      winSound();
+    }
+  })
 
   const startTimer = () => {
     setIsTimerStarted(true);
@@ -95,12 +124,14 @@ const AppComponent = () => {
   }, [matchedCards, images.length]);
 
   const handleCardClick = (index) => {
+    
     if (
       !gameStarted ||
       flippedStates[index] ||
       selectedCards.length === 2 ||
       guesses >= MAX_GUESSES ||
-      !isTimerStarted
+      !isTimerStarted ||
+      cardSound()
     )
       return;
 
@@ -125,6 +156,8 @@ const AppComponent = () => {
         setMatchedCards((prev) => [...prev, firstIndex, secondIndex]);
       } else {
         setTimeout(() => {
+          cardSound();
+          
           setFlippedStates((prev) => ({
             ...prev,
             [firstIndex]: false,
@@ -158,13 +191,14 @@ const AppComponent = () => {
         return newState;
       });
       
-    }, 3000);
+    }, 1500);
     
     startTimer();
   };
 
   const handleRestart = () => {
-    setCountTimer(40);
+    
+    setCountTimer(35);
     setShowModal(false);
     setShowModal2(false);
     setShowModal3(false);
@@ -177,7 +211,10 @@ const AppComponent = () => {
     setShowConfetti(false);
     fetchCards();
     stopTimer();
+
+    
   };
+  
 
   return (
     <div className="relative flex h-screen w-screen bg-bgImage bg-cover justify-center items-center">
@@ -232,14 +269,14 @@ const AppComponent = () => {
 
       {!isLoading && (
         <div>
-          <div className="absolute top-28 right-80">
+          <div className="absolute p-1 lg-top-72 lg:right-96 md-top-72 md:right-96 sm:right-14 sm:top-72">
             <CountdownTimer time={countTimer} startTimer={isTimerStarted} />
           </div>
 
-          <div className="absolute top-48 right-80">
+          <div className="absolute  p-1 md:top-64 lg:top-64   md:right-96 lg:right-96 sm:right-14 sm:top-64">
             <GuessCounter title="Guesses" count={guesses} />
           </div>
-          <div className="absolute top-16 right-80">
+          <div className="absolute md:top-48 lg:top-48 pr-1 md:right-96 lg:right-96 sm:right-14 sm:top-44">
             <ButtonOpen handleClick={handleButtonClick} title="Start" />
           </div>
         </div>
